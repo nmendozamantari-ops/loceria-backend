@@ -12,9 +12,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Cargar el router y las rutas
+// Cargar la clase Router
 require_once __DIR__ . '/core/Router.php';
+
+// Crear la instancia DEL ROUTER antes de cargar las rutas
+$router = new Router();
+
+// Cargar las rutas (aquí $router YA EXISTE)
 require_once __DIR__ . '/app/Routes/api.php';
 
-$router = new Router();
+// Ejecutar el router
 $router->run();
