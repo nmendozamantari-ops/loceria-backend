@@ -1,10 +1,6 @@
 <?php
-require_once __DIR__ . '/../../core/Router.php';
-require_once __DIR__ . '/../Controllers/AuthController.php';
-require_once __DIR__ . '/../Controllers/ProductoController.php';
-
-$router = new Router();
-
+// public/app/Routes/api.php
+//jaja
 // Autenticación
 $router->post('/auth/register', 'AuthController@register');
 $router->post('/auth/login', 'AuthController@login');
