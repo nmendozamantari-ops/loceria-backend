@@ -31,6 +31,12 @@ class Router {
         $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $requestMethod = $_SERVER['REQUEST_METHOD'];
 
+        // 🔥 Manejo del preflight OPTIONS (CORS)
+        if ($requestMethod === 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
+
         // Quitar el prefijo "/public" si existe
         if (str_starts_with($requestUri, '/public')) {
             $requestUri = substr($requestUri, strlen('/public'));
@@ -54,15 +60,15 @@ class Router {
 
     private function dispatch($action, $middleware = null) {
         list($controllerName, $methodName) = explode('@', $action);
-        $controllerFile = __DIR__ . '/../app/Controllers/' . $controllerName . '.php'; // ← CORREGIDO
-        
+        $controllerFile = __DIR__ . '/../app/Controllers/' . $controllerName . '.php';
+
         if (!file_exists($controllerFile)) {
             throw new Exception("Controlador $controllerName no encontrado");
         }
 
         require_once $controllerFile;
 
-        // Ejecutar middleware si existe
+        // Middleware
         $authPayload = null;
         if ($middleware) {
             $authPayload = $this->executeMiddleware($middleware);
@@ -71,10 +77,10 @@ class Router {
         // Instanciar el controlador
         $controller = new $controllerName();
 
-        // Obtener los datos del request
+        // Leer JSON enviado
         $data = json_decode(file_get_contents('php://input'), true) ?? [];
 
-        // Agregar información de autenticación al request si existe
+        // Inyectar usuario autenticado
         if ($authPayload) {
             $data['auth_user'] = $authPayload;
         }
@@ -85,25 +91,30 @@ class Router {
 
     private function executeMiddleware($middleware) {
         if (is_string($middleware)) {
-            $middlewareFile = __DIR__ . '/../app/Middlewares/' . $middleware . '.php'; // ← CORREGIDO
+            $middlewareFile = __DIR__ . '/../app/Middlewares/' . $middleware . '.php';
             if (!file_exists($middlewareFile)) {
                 throw new Exception("Middleware $middleware no encontrado");
             }
             require_once $middlewareFile;
             return $middleware::authenticate();
-        } elseif (is_array($middleware)) {
+        } 
+        elseif (is_array($middleware)) {
             $middlewareClass = $middleware['middleware'];
-            $middlewareFile = __DIR__ . '/../app/Middlewares/' . $middlewareClass . '.php'; // ← CORREGIDO
+            $middlewareFile = __DIR__ . '/../app/Middlewares/' . $middlewareClass . '.php';
+
             if (!file_exists($middlewareFile)) {
                 throw new Exception("Middleware $middlewareClass no encontrado");
             }
+
             require_once $middlewareFile;
+
             if (isset($middleware['roles'])) {
                 return $middlewareClass::requireRole($middleware['roles']);
             } else {
                 return $middlewareClass::authenticate();
             }
         }
+
         return null;
     }
 }
