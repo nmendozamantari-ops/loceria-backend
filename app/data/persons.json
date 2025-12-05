@@ -1,0 +1,4 @@
+[
+  { "dni": "1", "name": "Pedro Coronado", "age": 30, "email": "pedro@mail.com" },
+  { "dni": "87654321", "name": "Yanina López", "age": 28, "email": "yanina@mail.com" }
+]
