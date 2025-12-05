@@ -9,44 +9,63 @@ class ProductoRepository {
     }
 
     public function getAll() {
-        $sql = "
-            SELECT 
-                p.id_producto,
-                p.nombre,
-                p.descripcion,
-                p.precio,
-                p.stock,
-                p.imagen,
-                p.id_categoria,
-                c.nombre AS categoria
-            FROM productos p
-            LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
-            ORDER BY p.id_producto DESC
-        ";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
+        $sql = "SELECT * FROM producto ORDER BY id_producto DESC";
+        $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
 
     public function getById($id) {
-        $sql = "
-            SELECT 
-                p.id_producto,
-                p.nombre,
-                p.descripcion,
-                p.precio,
-                p.stock,
-                p.imagen,
-                p.id_categoria,
-                c.nombre AS categoria
-            FROM productos p
-            LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
-            WHERE p.id_producto = ?
-        ";
-
+        $sql = "SELECT * FROM producto WHERE id_producto = :id";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$id]);
+        $stmt->execute(['id' => $id]);
         return $stmt->fetch();
     }
+
+    public function create($data) {
+        $sql = "INSERT INTO producto (nombre, descripcion, precio, stock, id_categoria, imagen, estado) 
+                VALUES (:nombre, :descripcion, :precio, :stock, :id_categoria, :imagen, :estado)";
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            'nombre' => $data['nombre'],
+            'descripcion' => $data['descripcion'],
+            'precio' => $data['precio'],
+            'stock' => $data['stock'],
+            'id_categoria' => $data['id_categoria'],
+            'imagen' => $data['imagen'],
+            'estado' => $data['estado']
+        ]);
+    }
+
+    public function update($id, $data) {
+        $sql = "UPDATE producto SET 
+                nombre = :nombre,
+                descripcion = :descripcion,
+                precio = :precio,
+                stock = :stock,
+                id_categoria = :id_categoria,
+                imagen = :imagen,
+                estado = :estado
+                WHERE id_producto = :id";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            'nombre' => $data['nombre'],
+            'descripcion' => $data['descripcion'],
+            'precio' => $data['precio'],
+            'stock' => $data['stock'],
+            'id_categoria' => $data['id_categoria'],
+            'imagen' => $data['imagen'],
+            'estado' => $data['estado'],
+            'id' => $id
+        ]);
+    }
+
+    public function delete($id) {
+        $sql = "DELETE FROM producto WHERE id_producto = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute(['id' => $id]);
+    }
 }
+?>
